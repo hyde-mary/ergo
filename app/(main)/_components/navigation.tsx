@@ -16,6 +16,7 @@ import { Trashbox } from "./trashbox";
 import { useSearch } from "@/hooks/use-search";
 import { useSettings } from "@/hooks/use-settings";
 import { Navbar } from "./navbar";
+import { useRouter } from "next/navigation";
 
 
 
@@ -32,6 +33,8 @@ export const Navigation = () => {
   const navbarRef = useRef<ElementRef<"div">>(null);
   const [isResetting, setIsResetting] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(isMobile);
+
+  const router = useRouter();
 
   useEffect(()=>{
     isMobile ? collapse() : resetWidth();
@@ -101,7 +104,8 @@ export const Navigation = () => {
   }
 
   const handleCreate = () => {
-    const promise = create({ title: "Untitled" });
+    const promise = create({ title: "Untitled" })
+    .then((documentId) => router.push(`/documents/${documentId}`))
 
     toast.promise(promise, {
       loading: "Creating new task...",
