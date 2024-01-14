@@ -84,7 +84,7 @@ export const Trashbox = () => {
                 </p>
                 {filteredDocuments?.map((document) => (
                     <div
-                    key={document.id}
+                    key={document._id}
                     role="button"
                     onClick={() => onClick(document._id)}
                     className="text-sm rounded-sm w-full hover:bg-primary/5 flex items-center text-primary justify-between"
