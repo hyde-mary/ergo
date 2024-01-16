@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { ChevronsLeftIcon, MenuIcon, Plus, PlusCircle, Search, Settings, Trash } from "lucide-react";
+import { Calendar, CalendarPlus, ChevronsLeftIcon, MenuIcon, Plus, PlusCircle, Search, Settings, Trash } from "lucide-react";
 import { useParams, usePathname } from "next/navigation";
 import { ElementRef, useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "usehooks-ts";
@@ -114,6 +114,9 @@ export const Navigation = () => {
     })
   }
 
+  const handleCreateList = () => {
+  }
+
   return (
     <>
       <aside
@@ -148,16 +151,26 @@ export const Navigation = () => {
           onClick={settings.onOpen}
           />
           <Item 
+          label="Calendar"
+          icon={Calendar}
+          onClick={()=>{}}
+          />
+          <Item 
           onClick={handleCreate} 
-          label="New Page" 
+          label="Add a Document" 
           icon={PlusCircle}/>
+          <Item
+          onClick={()=>{}}
+          icon={CalendarPlus}
+          label="Add an Event List"
+          />
         </div>
         <div className="mt-4">
           <DocumentList />
           <Item 
           onClick={handleCreate}
           icon={Plus}
-          label="Add a page"
+          label="Add a Document"
           />
           <Popover>
             <PopoverTrigger

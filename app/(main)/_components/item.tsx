@@ -6,7 +6,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { useMutation } from "convex/react";
-import { ChevronDown, ChevronRight, LucideIcon, MoreHorizontal, PlusCircle, Trash2 } from "lucide-react";
+import { CalendarPlus, ChevronDown, ChevronRight, LucideIcon, MoreHorizontal, PlusCircle, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
@@ -87,6 +87,10 @@ export const Item = ({
         });
     };
 
+    const onCreateList = () => {
+
+    }
+
     return(
         <div
             onClick={onClick}
@@ -152,6 +156,12 @@ export const Item = ({
                                 </div>
                         </DropdownMenuContent>
                     </DropdownMenu>
+                    <div
+                    role="button"
+                    onClick={()=>{}}
+                    className="opacity-0 group-hover:opacity-100 h-full ml-auto rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600">
+                        <CalendarPlus className="h-4 w-4 text-muted-foreground"/>
+                    </div>
                     <div 
                     role="button"
                     onClick={onCreate}
