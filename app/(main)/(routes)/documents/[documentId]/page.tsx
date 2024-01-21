@@ -14,7 +14,6 @@ import { BlockNoteView, useBlockNote } from "@blocknote/react";
 import "@blocknote/react/style.css";
 import TableEditor from "@/components/table-editor";
 
-
 interface DocumentIdPageProps {
   params: {
     documentId: Id<"documents">;
@@ -68,8 +67,7 @@ const DocumentIdPage = ({
       <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
         <Toolbar initialData={document} />
         {isTable ? (
-          <TableEditor
-          />
+          <TableEditor/>
         ) : (
           <Editor
           onChange={onChange}
