@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { Payment, columns } from "@/app/(main)/_components/columns";
 import { DataTable } from "@/app/(main)/_components/data-table";
@@ -29,8 +31,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar } from "./ui/calendar";
-import { FormControl } from "./ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "./ui/form";
 import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "./ui/textarea";
 
 async function getData(): Promise<Payment[]> {
@@ -51,16 +62,23 @@ async function getData(): Promise<Payment[]> {
 
 const formSchema = z.object({
   title: z.string().min(2).max(50),
-  due: z.date().min(new Date("2023-01-01")),
+  dueDate: z.date().min(new Date("2023-01-01")),
   assigned: z.string().min(2).max(50),
-  delegator: z.string().min(2).max(50),
+  link: z.string(),
   reminder: z.date().min(new Date("2023-01-01")),
   subject: z.string().min(2).max(50),
-  e_body: z.string(),
+  emailBody: z.string(),
 });
 
 const TableEditor = () => {
   const [data, setData] = useState<Payment[]>([]);
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      subject: "This is an automatic email",
+      emailBody: "This is an automatic email",
+    },
+  });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,6 +88,8 @@ const TableEditor = () => {
 
     fetchData();
   }, []); // Empty dependency array to run the effect only once
+
+  const handleSubmit = () => {};
 
   return (
     <div className="ml-[54px]">
@@ -91,127 +111,222 @@ const TableEditor = () => {
 
             <div className="flex items-center space-x-2 justify-end">
               <div className="grid flex-1 gap-2">
-                <div className="flex items-center">
-                  <PersonStanding className="mr-2" />
-                  <Label htmlFor="task" className="text-left">
-                    Title:
-                  </Label>
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(handleSubmit)}
+                    className="max-w-md w-fullflex flex-col gap-4"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel className="text-left">Title</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="ml-4"
+                                placeholder="Task Title"
+                                type="text"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-                  <Input className="ml-4" type="task-title" placeholder="Task Title" />
-                </div>
+                    <FormField
+                      control={form.control}
+                      name="assigned"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel className="text-left">
+                              Assigned:
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="ml-4"
+                                placeholder="Assigned Personnel"
+                                type="text"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-                <div className="flex items-center justify-start">
-                  <CalendarCheck className="mr-2" />
-                  <Label htmlFor="event_name" className="text-left">
-                    Due:
-                  </Label>
+                    <FormField
+                      control={form.control}
+                      name="dueDate"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel className="text-left">
+                              <span>Due Date</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant={"outline"}
+                                    className="w-[200px] ml-4 pl-3 text-left font-normal"
+                                  >
+                                    Pick a date
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                  className="w-auto p-0"
+                                  align="start"
+                                >
+                                  <Calendar
+                                    {...field}
+                                    mode="single"
+                                    onSelect={() => {}}
+                                    disabled={(date) =>
+                                      date > new Date() ||
+                                      date < new Date("1900-01-01")
+                                    }
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-                  <div className="ml-4">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className="w-[320px] pl-3 text-left font-normal"
-                        >
-                          Pick a date
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          onSelect={() => {}}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
+                    <FormField
+                      control={form.control}
+                      name="reminder"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel className="text-left">
+                              <span>Reminder</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant={"outline"}
+                                    className="w-[200px] ml-4 pl-3 text-left font-normal"
+                                  >
+                                    Pick a date
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent
+                                  className="w-auto p-0"
+                                  align="start"
+                                >
+                                  <Calendar
+                                    {...field}
+                                    mode="single"
+                                    onSelect={() => {}}
+                                    disabled={(date) =>
+                                      date > new Date() ||
+                                      date < new Date("1900-01-01")
+                                    }
+                                    initialFocus
+                                  />
+                                </PopoverContent>
+                              </Popover>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-                <div className="flex items-center">
-                  <PersonStanding className="mr-2" />
-                  <Label htmlFor="event_name" className="text-left">
-                    Assigned:
-                  </Label>
+                    <FormField
+                      control={form.control}
+                      name="link"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel className="text-left">
+                              <span>Complementary Links</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="ml-4"
+                                placeholder="Complementary Links"
+                                type="url"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-                  <Input className="ml-4" type="assigned_by" placeholder="Delegator Name" />
-                </div>
+                    <FormField
+                      control={form.control}
+                      name="subject"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel className="text-left">
+                              <span>Email Subject</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="ml-4"
+                                placeholder="Subject"
+                                type="text"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-                <div className="flex items-center">
-                  <Link className="mr-2" />
-                  <Label htmlFor="event_name" className="text-left">
-                    Links:
-                  </Label>
-                  <Input className="ml-4 w-full" type="links" placeholder="Complementary Links" />
-                </div>
+                    <FormField
+                      control={form.control}
+                      name="emailBody"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel className="text-left">
+                              <span>Email Composition</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                className="ml-4 resize-none"
+                                placeholder="Enter email body here"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-                <div className="flex items-center">
-                  <Clock className="mr-2" />
-                  <Label htmlFor="event_name" className="text-left">
-                    Reminder:
-                  </Label>
-
-                  <div className="ml-4">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant={"outline"}
-                          className="w-[280px] pl-3 text-left font-normal"
-                        >
-                          Pick a date
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          onSelect={() => {}}
-                          disabled={(date) =>
-                            date > new Date() || date < new Date("1900-01-01")
-                          }
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-                </div>
-
-                <div className="flex items-center">
-                  <Pencil className="mr-2" />
-                  <Label htmlFor="event_name" className="text-left">
-                    Subject:
-                  </Label>
-
-                  <Input className="ml-4" type="subject" placeholder="Subject" />
-                </div>
-
-                <div className="flex items-center">
-                  <Mail className="mr-2" />
-                  <Label htmlFor="event_name" className="text-left">
-                    Email Composition:
-                  </Label>
-                </div>
-
-                <Textarea className="resize-none" placeholder="Enter email body here" />
+                    <DialogFooter className="sm:justify-end mt-2">
+                      <DialogClose asChild>
+                        <Button variant="secondary">Cancel</Button>
+                      </DialogClose>
+                      <Button variant="outline">Save as Draft</Button>
+                      <Button type="submit" variant="default">
+                        Finalize
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </Form>
               </div>
             </div>
-
-            <DialogFooter className="sm:justify-end">
-              <DialogClose asChild>
-                <Button type="button" variant="secondary">
-                  Cancel
-                </Button>
-              </DialogClose>
-              <Button type="button" variant="outline">
-                Save as Draft
-              </Button>
-              <Button type="button" variant="default">
-                Finalize
-              </Button>
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
