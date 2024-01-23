@@ -87,10 +87,6 @@ export const Item = ({
         });
     };
 
-    const onCreateList = () => {
-
-    }
-
     return(
         <div
             onClick={onClick}
