@@ -39,3 +39,20 @@ export const create = mutation({
         return task;
     }
 })
+
+export const getTaskList = query({
+    args:{
+        parentDocument: v.optional(v.id("documents")),
+    }, handler: async(ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+
+        if (!identity){
+            throw new Error("Not authenticated");
+        }
+
+        const taskList = ctx.db.query("tasks")
+        .collect()
+        
+        return taskList;
+    },
+})
