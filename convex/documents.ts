@@ -268,6 +268,17 @@ export const getSearch = query({
     }
   });
 
+  export const getIsTable = query({
+    args: {id: v.id("documents")},
+    handler: async (ctx, args) => {
+      const task = await ctx.db.get(args.id);
+
+      const isTable = task?.isTable || false;
+
+      return isTable;
+    }
+  })
+
   export const getById = query({
     args: { documentId: v.id("documents") },
     handler: async (ctx, args) => {

@@ -12,9 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import {
-  CalendarIcon,
-} from "lucide-react";
+import { CalendarIcon } from "lucide-react";
 import {
   Popover,
   PopoverContent,
@@ -43,10 +41,10 @@ import { useParams } from "next/navigation";
 
 const FormSchema = z.object({
   title: z.string().min(2).max(50),
-  dueDate: z.date().min(new Date()),
+  dueDate: z.date(),
   assigned: z.string().min(2).max(50),
   link: z.string(),
-  reminder: z.date().min(new Date()),
+  reminder: z.date(),
   subject: z.string(),
   emailBody: z.string(),
 });
@@ -64,32 +62,32 @@ const TaskCreate = () => {
       link: "",
       reminder: new Date(),
       subject: "This is an Automatically Generated Subject",
-      emailBody: "This is a Automatically Generated Email Body"
-    }
+      emailBody: "This is a Automatically Generated Email Body",
+    },
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    
-    const { title, dueDate, assigned, link, reminder, subject, emailBody } = data;
+    const { title, dueDate, assigned, link, reminder, subject, emailBody } =
+      data;
 
     const promise = createTask({
-      parentDocument: params.documentId, 
-      title: title, 
+      parentDocument: params.documentId,
+      title: title,
       dueDate: dueDate.toJSON(),
       assigned: assigned,
       link: link,
       reminder: reminder.toJSON(),
       subject: subject,
       emailBody: emailBody,
-    })
+    });
 
     form.reset();
 
     toast.promise(promise, {
       loading: "Creating Tasks",
       success: "Task Created!",
-      error: "Failed to Create Task!"
-    })
+      error: "Failed to Create Task!",
+    });
   }
 
   return (
@@ -167,13 +165,13 @@ const TaskCreate = () => {
                           <FormLabel className="text-left">
                             <span>Due Date</span>
                           </FormLabel>
-                          <FormControl>
-                            <Popover>
-                              <PopoverTrigger asChild>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
                                 <Button
                                   variant={"outline"}
                                   className={cn(
-                                    "w-[200px] ml-4 pl-3 text-left font-normal",
+                                    "w-[240px] pl-3 text-left font-normal ml-4",
                                     !field.value && "text-muted-foreground"
                                   )}
                                 >
@@ -184,25 +182,21 @@ const TaskCreate = () => {
                                   )}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  {...field}
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date > new Date() ||
-                                    date < new Date("1900-01-01")
-                                  }
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </FormControl>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
                           <FormMessage />
                         </FormItem>
                       );
@@ -218,13 +212,13 @@ const TaskCreate = () => {
                           <FormLabel className="text-left">
                             <span>Reminder</span>
                           </FormLabel>
-                          <FormControl>
-                            <Popover>
-                              <PopoverTrigger asChild>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <FormControl>
                                 <Button
                                   variant={"outline"}
                                   className={cn(
-                                    "w-[200px] ml-4 pl-3 text-left font-normal",
+                                    "w-[240px] pl-3 text-left font-normal ml-4",
                                     !field.value && "text-muted-foreground"
                                   )}
                                 >
@@ -235,25 +229,21 @@ const TaskCreate = () => {
                                   )}
                                   <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  {...field}
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date > new Date() ||
-                                    date < new Date("1900-01-01")
-                                  }
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                          </FormControl>
+                              </FormControl>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-auto p-0"
+                              align="start"
+                            >
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => date < new Date()}
+                                initialFocus
+                              />
+                            </PopoverContent>
+                          </Popover>
                           <FormMessage />
                         </FormItem>
                       );

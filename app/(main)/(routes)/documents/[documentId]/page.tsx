@@ -9,8 +9,6 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Toolbar } from "@/components/toolbar";
 import { Cover } from "@/components/cover";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BlockNoteEditor } from "@blocknote/core";
-import { BlockNoteView, useBlockNote } from "@blocknote/react";
 import "@blocknote/react/style.css";
 import TableEditor from "@/components/table-editor";
 
@@ -67,10 +65,7 @@ const DocumentIdPage = ({
       <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
         <Toolbar initialData={document} />
         {isTable ? (
-          <TableEditor 
-          onChange={onChange}
-          initialContent={document.content}
-          />
+          <TableEditor />
         ) : (
           <Editor
           onChange={onChange}

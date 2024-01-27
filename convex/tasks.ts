@@ -51,8 +51,39 @@ export const getTaskList = query({
         }
 
         const taskList = ctx.db.query("tasks")
+        .filter((q) => q.eq(q.field("parentDocument"), args.parentDocument))
         .collect()
         
         return taskList;
     },
+})
+
+export const deleteTask = mutation({
+    args: {
+        id: v.id("tasks") 
+    },
+    handler: async (ctx, args) => {
+
+        const identity = await ctx.auth.getUserIdentity();
+
+        if (!identity) {
+            throw new Error("Not authenticated!");
+        }
+
+        const userId = identity.subject;
+
+        const existingTask = await ctx.db.get(args.id);
+
+        if (!existingTask){
+            throw new Error("Task Not Found!");
+        }
+
+        if (existingTask.userId !== userId){
+            throw new Error ("Unauthorized Access");
+        }
+
+        const task = await ctx.db.delete(args.id);
+
+        return task;
+    }
 })
