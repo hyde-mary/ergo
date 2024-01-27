@@ -27,7 +27,6 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { useState } from "react";
 
@@ -54,6 +53,22 @@ const FormSchema = z.object({
   // subject: z.string(),
   // emailBody: z.string(),
 });
+
+const DeleteTaskButton = ({ taskId }: { taskId: string }) => {
+  const deleteTask = useMutation(api.tasks.deleteTask);
+
+  const handleDelete = async () => {
+    try {
+      await deleteTask({ id: taskId } as { id: Id<"tasks"> });
+      toast.success("Task deleted successfully!");
+    } catch (error) {
+      toast.error("I'm sorry, failed to delete task");
+      console.error(error);
+    }
+  };
+
+  return <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>;
+};
 
 export const columns: ColumnDef<Tasks>[] = [
   {
@@ -151,7 +166,6 @@ export const columns: ColumnDef<Tasks>[] = [
     id: "actions",
     cell: ({ row }) => {
       const task = row.original;
-      const deleteTask = useMutation(api.tasks.deleteTask);
 
       const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
 
@@ -201,19 +215,8 @@ export const columns: ColumnDef<Tasks>[] = [
               <DropdownMenuItem onClick={() => setIsUpdateDialogOpen(true)}>
                 Update Task
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => {
-                  try {
-                    deleteTask({ id: task._id as Id<"tasks"> });
-
-                    toast.success("Task deleted successfully!");
-                  } catch (error) {
-                    toast.error("Im sorry, failed to delete task");
-                    console.error(error);
-                  }
-                }}
-              >
-                Delete
+              <DropdownMenuItem>
+                <DeleteTaskButton taskId={task._id} />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
