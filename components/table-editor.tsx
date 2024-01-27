@@ -1,36 +1,35 @@
 "use client";
 
-import TaskCreate from "@/app/(main)/_components/task-create";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
-import { Button } from "./ui/button";
+import { Skeleton } from "./ui/skeleton";
+import { DataTable } from "@/app/(main)/_components/data-table";
+import { columns } from "@/app/(main)/_components/columns";
 
-interface EditorProps {
-  onChange: (value: string) => void;
-  initialContent?: string;
-  editable?: boolean;
-};
-
-const TableEditor = ({onChange, initialContent, editable} : EditorProps ) => {
-
+const TableEditor = () => {
   const params = useParams<{ documentId?: Id<"documents"> }>();
   const taskList = useQuery(api.tasks.getTaskList, {
     parentDocument: params.documentId
   });
 
-  const onClick = () => {
-    console.log(taskList);
+  if (taskList === undefined){
+    return(
+      <div>
+        <Skeleton className="h-6 w-36 mb-10" />
+        <Skeleton className="h-[50px] w-full mb-4" />
+        <Skeleton className="h-[50px] w-full mb-4" />
+        <Skeleton className="h-[50px] w-full mb-4" />
+        <Skeleton className="h-[50px] w-full mb-4" />
+        <Skeleton className="h-[50px] w-full mb-4" />
+      </div>
+    )
   }
 
   return (
-    <div className="ml-[54px]">
-      <TaskCreate />
-      <div>
-        <Button onClick={onClick}>
-        </Button>
-      </div>
+    <div>
+      <DataTable columns={columns} data={taskList}/>
     </div>
   );
 };
