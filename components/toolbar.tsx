@@ -34,8 +34,6 @@ export const Toolbar = ({
 
     const isTable = useQuery(api.documents.getIsTable, { id: initialData._id })
 
-    console.log(isTable);
-
     const enableInput = () => {
         if (preview) return;
     
