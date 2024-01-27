@@ -2,7 +2,7 @@
 
 import { ElementRef, useRef, useState } from "react";
 import { ImageIcon, Smile, X } from "lucide-react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import TextareaAutosize from "react-textarea-autosize";
 
 import { Doc } from "@/convex/_generated/dataModel";
@@ -11,6 +11,7 @@ import { api } from "@/convex/_generated/api";
 
 import { IconPicker } from "./icon-picker";
 import { useCoverImage } from "@/hooks/use-cover-image";
+import { useParams } from "next/navigation";
 
 interface ToolbarProps {
     initialData: Doc<"documents">;
@@ -29,6 +30,11 @@ export const Toolbar = ({
     const removeIcon = useMutation(api.documents.removeIcon);
 
     const coverImage = useCoverImage();
+    const params = useParams();
+
+    const isTable = useQuery(api.documents.getIsTable, { id: initialData._id })
+
+    console.log(isTable);
 
     const enableInput = () => {
         if (preview) return;
@@ -73,7 +79,7 @@ export const Toolbar = ({
       }
 
     return (
-        <div className="pl-[54px] group relative">
+        <div className={`group relative ${isTable ? "" : "pl-[54px]"}`}>
             {!!initialData.icon && !preview && (
         <div className="flex items-center gap-x-2 group/icon pt-6">
           <IconPicker onChange={onIconSelect}>
