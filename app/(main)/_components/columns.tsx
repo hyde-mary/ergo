@@ -29,6 +29,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useState } from "react";
+import DeleteTaskButton from "./delete-task-button";
 
 export type Tasks = {
   _id: string;
@@ -53,22 +54,6 @@ const FormSchema = z.object({
   // subject: z.string(),
   // emailBody: z.string(),
 });
-
-const DeleteTaskButton = ({ taskId }: { taskId: string }) => {
-  const deleteTask = useMutation(api.tasks.deleteTask);
-
-  const handleDelete = async () => {
-    try {
-      await deleteTask({ id: taskId } as { id: Id<"tasks"> });
-      toast.success("Task deleted successfully!");
-    } catch (error) {
-      toast.error("I'm sorry, failed to delete task");
-      console.error(error);
-    }
-  };
-
-  return <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>;
-};
 
 export const columns: ColumnDef<Tasks>[] = [
   {
@@ -216,7 +201,7 @@ export const columns: ColumnDef<Tasks>[] = [
                 Update Task
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <DeleteTaskButton taskId={task._id} />
+                <DeleteTaskButton taskId={task._id as Id<"tasks">} onDeleteSuccess={() => {}} />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
