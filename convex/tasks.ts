@@ -34,8 +34,6 @@ export const create = mutation({
             emailBody: args.emailBody,
         });
 
-        console.log("Created task:", task);
-
         return task;
     }
 })
