@@ -85,3 +85,40 @@ export const deleteTask = mutation({
         return task;
     }
 })
+
+export const update = mutation({
+    args: {
+        id: v.id("tasks"),
+        title: v.optional(v.string()),
+        dueDate: v.optional(v.string()),
+        assigned: v.optional(v.string()),
+        link: v.optional(v.string())
+    },
+    handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+  
+        if (!identity) {
+            throw new Error("Unauthenticated");
+        }
+  
+        const userId = identity.subject;
+
+        const { id, ...rest } = args;
+
+        const existingTask = await ctx.db.get(args.id);
+
+        if (!existingTask) {
+            throw new Error("Task Not Found");
+        }
+
+        if (existingTask.userId !== userId){
+            throw new Error("Unauthorized");
+        }
+
+        const task = await ctx.db.patch(args.id, {
+            ...rest,
+        });
+
+        return task;
+    }
+})
