@@ -41,6 +41,8 @@ export const Item = ({
     const { user } = useUser();
     const create = useMutation(api.documents.create);
     const archive = useMutation(api.documents.archive);
+
+    const createTable = useMutation(api.documents.createTable);
     const router = useRouter();
 
     const onArchive = (
@@ -84,6 +86,30 @@ export const Item = ({
             loading: "Creating a new task...",
             success: "New note task!",
             error: "Failed to create new task :("
+        });
+    };
+
+    const onCreateTable = (
+        event: React.MouseEvent<HTMLDivElement, MouseEvent>
+    ) => {
+        event.stopPropagation();
+        if (!id) return;
+
+        const promise = createTable({
+            title: "Untitled", 
+            parentDocument: id,
+            isTable: true,
+        }).then((documentId) => {
+            if (!expanded){
+                onExpand?.();
+            }
+            router.push(`/documents/${documentId}`);
+        })
+
+        toast.promise(promise, {
+            loading: "Creating a New Task Table...",
+            success: "New Task Table Created!",
+            error: "Failed to create new task table :("
         });
     };
 
@@ -154,7 +180,7 @@ export const Item = ({
                     </DropdownMenu>
                     <div
                     role="button"
-                    onClick={()=>{}}
+                    onClick={onCreateTable}
                     className="opacity-0 group-hover:opacity-100 h-full ml-auto rounded-sm hover:bg-neutral-300 dark:hover:bg-neutral-600">
                         <CalendarPlus className="h-4 w-4 text-muted-foreground"/>
                     </div>
