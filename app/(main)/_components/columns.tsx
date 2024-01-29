@@ -14,9 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { toast } from "sonner";
 
 import * as z from "zod";
 import { useForm } from "react-hook-form";
@@ -152,25 +149,22 @@ export const columns: ColumnDef<Tasks>[] = [
     cell: ({ row }) => {
       const task = row.original;
 
-      const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+      // const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
 
-      const form = useForm<z.infer<typeof FormSchema>>({
-        resolver: zodResolver(FormSchema),
-        defaultValues: {
-          title: "",
-          dueDate: new Date(),
-          assigned: "",
-          link: "",
-          reminder: new Date(),
-        },
-      });
+      // const form = useForm<z.infer<typeof FormSchema>>({
+      //   resolver: zodResolver(FormSchema),
+      //   defaultValues: {
+      //     title: "",
+      //     dueDate: new Date(),
+      //     assigned: "",
+      //     link: "",
+      //     reminder: new Date(),
+      //   },
+      // });
 
       return (
         <>
-          <Dialog
-            open={isUpdateDialogOpen}
-            onOpenChange={setIsUpdateDialogOpen}
-          >
+          <Dialog>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Update Task</DialogTitle>
@@ -197,11 +191,11 @@ export const columns: ColumnDef<Tasks>[] = [
                 Copy Task ID
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => setIsUpdateDialogOpen(true)}>
+              <DropdownMenuItem onClick={() => {}}>
                 Update Task
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <DeleteTaskButton taskId={task._id as Id<"tasks">} onDeleteSuccess={() => {}} />
+                <DeleteTaskButton taskId={task._id as Id<"tasks">} />
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
