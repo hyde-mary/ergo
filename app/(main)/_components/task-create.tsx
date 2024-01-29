@@ -38,6 +38,7 @@ import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { useParams } from "next/navigation";
+import { useState } from "react";
 
 const FormSchema = z.object({
   title: z.string().min(2).max(50),
@@ -52,6 +53,11 @@ const FormSchema = z.object({
 const TaskCreate = () => {
   const createTask = useMutation(api.tasks.create);
   const params = useParams<{ documentId?: Id<"documents"> }>();
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+
+  const handleButtonClick = () => {
+    setIsUpdateDialogOpen(true);
+  };
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -79,7 +85,7 @@ const TaskCreate = () => {
       reminder: reminder.toJSON(),
       subject: subject,
       emailBody: emailBody,
-    });
+    }).then(()=> setIsUpdateDialogOpen(false));
 
     form.reset();
 
@@ -92,12 +98,10 @@ const TaskCreate = () => {
 
   return (
     <div className="mt-4 mb-4">
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="default" size="sm">
+      <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+          <Button onClick={handleButtonClick} variant="default" size="sm">
             Create Tasks
           </Button>
-        </DialogTrigger>
 
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
