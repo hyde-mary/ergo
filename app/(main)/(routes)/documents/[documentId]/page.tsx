@@ -62,7 +62,7 @@ const DocumentIdPage = ({
   return ( 
     <div className="pb-40">
       <Cover url={document.coverImage} />
-      <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
+      <div className="md:max-w-4xl lg:max-w-5xl mx-auto">
         <Toolbar initialData={document} />
         {isTable ? (
           <TableEditor />
