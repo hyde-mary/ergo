@@ -9,7 +9,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { CalendarIcon } from "lucide-react";
@@ -43,7 +42,7 @@ import { useState } from "react";
 const FormSchema = z.object({
   title: z.string().min(2).max(50),
   dueDate: z.date(),
-  assigned: z.string().min(2).max(50),
+  assigned: z.string().min(2).email("This is not a valid email"),
   link: z.string(),
   reminder: z.date(),
   subject: z.string(),
@@ -72,6 +71,8 @@ const TaskCreate = () => {
     },
   });
 
+  
+
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const { title, dueDate, assigned, link, reminder, subject, emailBody } =
       data;
@@ -85,7 +86,7 @@ const TaskCreate = () => {
       reminder: reminder.toJSON(),
       subject: subject,
       emailBody: emailBody,
-    }).then(()=> setIsUpdateDialogOpen(false));
+    }).then(() => setIsUpdateDialogOpen(false));
 
     form.reset();
 
@@ -94,14 +95,20 @@ const TaskCreate = () => {
       success: "Task Created!",
       error: "Failed to Create Task!",
     });
+
+    fetch('/api/sendEmail//route.ts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+
   }
 
   return (
     <div className="mt-4 mb-4">
       <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
-          <Button onClick={handleButtonClick} variant="default" size="sm">
-            Create Tasks
-          </Button>
+        <Button onClick={handleButtonClick} variant="default" size="sm">
+          Create Tasks
+        </Button>
 
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
