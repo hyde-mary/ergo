@@ -39,6 +39,8 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 
+import { useUser } from "@clerk/clerk-react";
+
 const FormSchema = z.object({
   title: z.string().min(2).max(50),
   dueDate: z.date(),
@@ -47,12 +49,16 @@ const FormSchema = z.object({
   reminder: z.date(),
   subject: z.string(),
   emailBody: z.string(),
+  assignedBy: z.string(),
 });
 
 const TaskCreate = () => {
   const createTask = useMutation(api.tasks.create);
   const params = useParams<{ documentId?: Id<"documents"> }>();
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const { user } = useUser();
+
+  const assignedBy = user?.firstName as string;
 
   const handleButtonClick = () => {
     setIsUpdateDialogOpen(true);
@@ -67,11 +73,10 @@ const TaskCreate = () => {
       link: "",
       reminder: new Date(),
       subject: "This is an Automatically Generated Subject",
-      emailBody: "This is a Automatically Generated Email Body",
+      emailBody: "This is an Automatically Generated Email Body",
+      assignedBy: assignedBy,
     },
   });
-
-  
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const { title, dueDate, assigned, link, reminder, subject, emailBody } =
@@ -86,7 +91,13 @@ const TaskCreate = () => {
       reminder: reminder.toJSON(),
       subject: subject,
       emailBody: emailBody,
+      assignedBy: assignedBy,
     }).then(() => setIsUpdateDialogOpen(false));
+
+    const fullData = {
+      ...data,
+      assignedBy: assignedBy,
+    };
 
     form.reset();
 
@@ -96,11 +107,20 @@ const TaskCreate = () => {
       error: "Failed to Create Task!",
     });
 
-    fetch('/api/sendEmail//route.ts', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
-
+    fetch("/api/sendEmail/route.ts", {
+      method: "POST",
+      body: JSON.stringify(fullData),
+    }).then(response => {
+        if (response.ok) {
+          toast.success("Email Sent!");
+        } else {
+          toast.error("Failed to send email.");
+        }
+      })
+      .catch(error => {
+        console.error("Error sending email:", error);
+        toast.error("An error occurred while sending email.");
+      });
   }
 
   return (
@@ -110,7 +130,7 @@ const TaskCreate = () => {
           Create Tasks
         </Button>
 
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md md:min-w-[1000px] p-4">
           <DialogHeader>
             <DialogTitle>Create Tasks</DialogTitle>
             <DialogDescription>
@@ -118,219 +138,223 @@ const TaskCreate = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex items-center space-x-2 justify-end">
-            <div className="grid flex-1 gap-2">
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="max-w-md w-fullflex flex-col gap-4"
-                >
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel className="text-left">Title</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="ml-4"
-                              placeholder="Task Title"
-                              type="text"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="assigned"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel className="text-left">Assigned:</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="ml-4"
-                              placeholder="Assigned Personnel"
-                              type="text"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="dueDate"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel className="text-left">
-                            <span>Due Date</span>
-                          </FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-[240px] pl-3 text-left font-normal ml-4",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP")
-                                  ) : (
-                                    <span>Pick a date</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) => date < new Date()}
-                                initialFocus
+          <div className="">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <div className="flex flex-col md:flex-row justify-around">
+                  <div className="md:w-2/5 flex flex-col md:mr-4">
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => {
+                        return (
+                          <FormItem className="">
+                            <FormLabel className="text-left">Title</FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="ml-4 sm:mr-4"
+                                placeholder="Task Title"
+                                type="text"
                               />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="reminder"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel className="text-left">
-                            <span>Reminder</span>
-                          </FormLabel>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant={"outline"}
-                                  className={cn(
-                                    "w-[240px] pl-3 text-left font-normal ml-4",
-                                    !field.value && "text-muted-foreground"
-                                  )}
-                                >
-                                  {field.value ? (
-                                    format(field.value, "PPP")
-                                  ) : (
-                                    <span>Pick a date</span>
-                                  )}
-                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent
-                              className="w-auto p-0"
-                              align="start"
-                            >
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) => date < new Date()}
-                                initialFocus
+                    <FormField
+                      control={form.control}
+                      name="dueDate"
+                      render={({ field }) => {
+                        return (
+                          <FormItem className="mt-4">
+                            <FormLabel className="text-left">
+                              <span>Due Date</span>
+                            </FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-[240px] pl-3 text-left font-normal ml-4",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, "PPP")
+                                    ) : (
+                                      <span>Pick a date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) => date < new Date()}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="reminder"
+                      render={({ field }) => {
+                        return (
+                          <FormItem className="mt-4">
+                            <FormLabel className="text-left">
+                              <span>Reminder</span>
+                            </FormLabel>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant={"outline"}
+                                    className={cn(
+                                      "w-[240px] pl-3 text-left font-normal ml-4",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                  >
+                                    {field.value ? (
+                                      format(field.value, "PPP")
+                                    ) : (
+                                      <span>Pick a date</span>
+                                    )}
+                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent
+                                className="w-auto p-0"
+                                align="start"
+                              >
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) => date < new Date()}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="link"
+                      render={({ field }) => {
+                        return (
+                          <FormItem className="mt-4">
+                            <FormLabel className="text-left">
+                              <span>Complementary Links</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="ml-4"
+                                placeholder="Complementary Links"
+                                type="url"
                               />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  </div>
 
-                  <FormField
-                    control={form.control}
-                    name="link"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel className="text-left">
-                            <span>Complementary Links</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="ml-4"
-                              placeholder="Complementary Links"
-                              type="url"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
+                  <div className="md:w-2/5 flex flex-col">
+                    <FormField
+                      control={form.control}
+                      name="assigned"
+                      render={({ field }) => {
+                        return (
+                          <FormItem className="">
+                            <FormLabel className="text-left">
+                              Assigned:
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="ml-4"
+                                placeholder="Assigned Personnel"
+                                type="text"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="subject"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel className="text-left">
-                            <span>Email Subject</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="ml-4"
-                              placeholder="Subject"
-                              type="text"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
+                    <FormField
+                      control={form.control}
+                      name="subject"
+                      render={({ field }) => {
+                        return (
+                          <FormItem className="mt-4">
+                            <FormLabel className="text-left">
+                              <span>Email Subject</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Input
+                                {...field}
+                                className="ml-4"
+                                placeholder="Subject"
+                                type="text"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="emailBody"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel className="text-left">
-                            <span>Email Composition</span>
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              className="ml-4 resize-none"
-                              placeholder="Enter email body here"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-
-                  <DialogFooter className="sm:justify-end mt-2">
-                    <DialogClose asChild>
+                    <FormField
+                      control={form.control}
+                      name="emailBody"
+                      render={({ field }) => {
+                        return (
+                          <FormItem className="mt-4">
+                            <FormLabel className="text-left">
+                              <span>Email Composition</span>
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                className="ml-4 resize-none"
+                                placeholder="Enter email body here"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        );
+                      }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <DialogFooter className="sm:justify-end mt-8">
+                    <DialogClose asChild onClick={() => {form.reset()}}>
                       <Button variant="secondary">Cancel</Button>
                     </DialogClose>
                     <Button variant="outline">Save as Draft</Button>
@@ -338,9 +362,9 @@ const TaskCreate = () => {
                       Finalize
                     </Button>
                   </DialogFooter>
-                </form>
-              </Form>
-            </div>
+                </div>
+              </form>
+            </Form>
           </div>
         </DialogContent>
       </Dialog>

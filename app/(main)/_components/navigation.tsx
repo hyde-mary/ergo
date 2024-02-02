@@ -18,8 +18,6 @@ import { useSettings } from "@/hooks/use-settings";
 import { Navbar } from "./navbar";
 import { useRouter } from "next/navigation";
 
-
-
 export const Navigation = () => {
   const pathname = usePathname();
   const isMobile = useMediaQuery("(max-width: 768px)");

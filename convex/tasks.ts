@@ -11,7 +11,8 @@ export const create = mutation({
         link: v.optional(v.string()),
         reminder: v.optional(v.string()),
         subject: v.optional(v.string()),
-        emailBody: v.optional(v.string())
+        emailBody: v.optional(v.string()),
+        assignedBy: v.optional(v.string()),
     }, 
     handler: async (ctx, args) => {
         const identity = await ctx.auth.getUserIdentity();
@@ -32,6 +33,7 @@ export const create = mutation({
             reminder: args.reminder,
             subject: args.subject,
             emailBody: args.emailBody,
+            assignedBy: args.assignedBy,
         });
 
         return task;
