@@ -28,14 +28,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { useUser } from "@clerk/clerk-react";
-
-interface SendEmailProps {
-  initialData: Doc<"documents">;
-}
-
-interface Member {
-  email: string;
-}
+import { useOrigin } from "@/hooks/use-origin";
 
 const FormSchema = z.object({
   email: z
@@ -46,13 +39,18 @@ const FormSchema = z.object({
     .email(),
 });
 
-export const SendEmail = ({ initialData }: SendEmailProps) => {
-  const [email, setEmail] = useState("");
+interface SendEmailProps {
+  documentId: Id<"documents">;
+};
+
+export const SendEmail = ({ documentId } : SendEmailProps) => {
   const params = useParams();
   const path = usePathname();
   const { user } = useUser();
+  const origin = useOrigin();
 
   const assignedBy = user?.firstName as string;
+  const url = `${origin}/preview/${documentId}`;
 
   const document = useQuery(api.documents.getById, {
     documentId: params.documentId as Id<"documents">,
@@ -66,11 +64,10 @@ export const SendEmail = ({ initialData }: SendEmailProps) => {
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
-    const link = "ergo-project.vercel.app" + path;
-
+    
     const fullData = {
       assignedBy,
-      link,
+      url,
       ...data
     };
 

@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   <h3>A file was shared to you by ${body.assignedBy}</h3>
 
   <h4>Check this document out:</h4>
-  <strong>Link:</strong> ${body.link}<br/>
+  <strong>Link:</strong> ${body.url}<br/>
   `
 
   const data = {
