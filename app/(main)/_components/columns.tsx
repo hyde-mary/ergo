@@ -21,7 +21,7 @@ export type Tasks = {
   subject?: string;
   title?: string;
   userId: string;
-  done: boolean;
+  done?: boolean;
 };
 
 export const columns: ColumnDef<Tasks>[] = [
@@ -70,7 +70,7 @@ export const columns: ColumnDef<Tasks>[] = [
           <div className="flex">
             <StatusTaskButton
               taskId={task._id as Id<"tasks">}
-              done={task.done}
+              done={task.done as boolean}
             />
           </div>
         </span>
