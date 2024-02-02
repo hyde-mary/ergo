@@ -71,8 +71,6 @@ const TaskCreate = () => {
     },
   });
 
-  
-
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const { title, dueDate, assigned, link, reminder, subject, emailBody } =
       data;
@@ -96,11 +94,10 @@ const TaskCreate = () => {
       error: "Failed to Create Task!",
     });
 
-    fetch('/api/sendEmail//route.ts', {
-      method: 'POST',
+    fetch("/api/sendEmail//route.ts", {
+      method: "POST",
       body: JSON.stringify(data),
-    })
-
+    });
   }
 
   return (
@@ -110,7 +107,7 @@ const TaskCreate = () => {
           Create Tasks
         </Button>
 
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md md:min-w-[1000px] p-4">
           <DialogHeader>
             <DialogTitle>Create Tasks</DialogTitle>
             <DialogDescription>
@@ -118,46 +115,25 @@ const TaskCreate = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="flex items-center space-x-2 justify-end">
-            <div className="grid flex-1 gap-2">
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="max-w-md w-fullflex flex-col gap-4"
-                >
+          <div className="">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="flex flex-col md:flex-row justify-around"
+              >
+                <div className="md:w-2/5 flex flex-col md:mr-4">
                   <FormField
                     control={form.control}
                     name="title"
                     render={({ field }) => {
                       return (
-                        <FormItem>
+                        <FormItem className="">
                           <FormLabel className="text-left">Title</FormLabel>
                           <FormControl>
                             <Input
                               {...field}
-                              className="ml-4"
+                              className="ml-4 sm:mr-4"
                               placeholder="Task Title"
-                              type="text"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      );
-                    }}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="assigned"
-                    render={({ field }) => {
-                      return (
-                        <FormItem>
-                          <FormLabel className="text-left">Assigned:</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              className="ml-4"
-                              placeholder="Assigned Personnel"
                               type="text"
                             />
                           </FormControl>
@@ -172,7 +148,7 @@ const TaskCreate = () => {
                     name="dueDate"
                     render={({ field }) => {
                       return (
-                        <FormItem>
+                        <FormItem className="mt-4">
                           <FormLabel className="text-left">
                             <span>Due Date</span>
                           </FormLabel>
@@ -219,7 +195,7 @@ const TaskCreate = () => {
                     name="reminder"
                     render={({ field }) => {
                       return (
-                        <FormItem>
+                        <FormItem className="mt-4">
                           <FormLabel className="text-left">
                             <span>Reminder</span>
                           </FormLabel>
@@ -266,7 +242,7 @@ const TaskCreate = () => {
                     name="link"
                     render={({ field }) => {
                       return (
-                        <FormItem>
+                        <FormItem className="mt-4">
                           <FormLabel className="text-left">
                             <span>Complementary Links</span>
                           </FormLabel>
@@ -283,13 +259,36 @@ const TaskCreate = () => {
                       );
                     }}
                   />
+                </div>
+
+                <div className="md:w-2/5 flex flex-col">
+                  <FormField
+                    control={form.control}
+                    name="assigned"
+                    render={({ field }) => {
+                      return (
+                        <FormItem className="">
+                          <FormLabel className="text-left">Assigned:</FormLabel>
+                          <FormControl>
+                            <Input
+                              {...field}
+                              className="ml-4"
+                              placeholder="Assigned Personnel"
+                              type="text"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      );
+                    }}
+                  />
 
                   <FormField
                     control={form.control}
                     name="subject"
                     render={({ field }) => {
                       return (
-                        <FormItem>
+                        <FormItem className="mt-4">
                           <FormLabel className="text-left">
                             <span>Email Subject</span>
                           </FormLabel>
@@ -312,7 +311,7 @@ const TaskCreate = () => {
                     name="emailBody"
                     render={({ field }) => {
                       return (
-                        <FormItem>
+                        <FormItem className="mt-4">
                           <FormLabel className="text-left">
                             <span>Email Composition</span>
                           </FormLabel>
@@ -328,19 +327,19 @@ const TaskCreate = () => {
                       );
                     }}
                   />
+                </div>
+              </form>
 
-                  <DialogFooter className="sm:justify-end mt-2">
-                    <DialogClose asChild>
-                      <Button variant="secondary">Cancel</Button>
-                    </DialogClose>
-                    <Button variant="outline">Save as Draft</Button>
-                    <Button type="submit" variant="default">
-                      Finalize
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </div>
+              <DialogFooter className="sm:justify-end mt-8">
+                <DialogClose asChild>
+                  <Button variant="secondary">Cancel</Button>
+                </DialogClose>
+                <Button variant="outline">Save as Draft</Button>
+                <Button type="submit" variant="default">
+                  Finalize
+                </Button>
+              </DialogFooter>
+            </Form>
           </div>
         </DialogContent>
       </Dialog>
