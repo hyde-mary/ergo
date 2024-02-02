@@ -26,6 +26,7 @@ export default defineSchema({
         subject: v.optional(v.string()),
         emailBody: v.optional(v.string()),
         assignedBy: v.optional(v.string()),
+        done: v.optional(v.boolean()),
     })
     .index("by_user", ["userId"])
     .index("by_document_id", ["parentDocument"])
