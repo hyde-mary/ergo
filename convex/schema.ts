@@ -24,7 +24,8 @@ export default defineSchema({
         link: v.optional(v.string()),
         reminder: v.optional(v.string()),
         subject: v.optional(v.string()),
-        emailBody: v.optional(v.string())
+        emailBody: v.optional(v.string()),
+        assignedBy: v.optional(v.string()),
     })
     .index("by_user", ["userId"])
     .index("by_document_id", ["parentDocument"])
