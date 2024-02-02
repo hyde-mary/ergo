@@ -1,104 +1,157 @@
 "use client";
 
 import React, { useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { Check, Copy, Globe, Mail, Plus } from "lucide-react";
 
-import { Doc } from "@/convex/_generated/dataModel";
+import { Doc, Id } from "@/convex/_generated/dataModel";
 import {
   PopoverTrigger,
   Popover,
-  PopoverContent
-} from "@/components/ui/popover"
-import { useOrigin } from "@/hooks/use-origin";
+  PopoverContent,
+} from "@/components/ui/popover";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
+import { useParams, usePathname } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import * as z from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useUser } from "@clerk/clerk-react";
 
 interface SendEmailProps {
-    initialData: Doc<"documents">
-};
+  initialData: Doc<"documents">;
+}
 
 interface Member {
-    email: string;
+  email: string;
 }
 
-export const SendEmail = ({ initialData }: SendEmailProps ) => {
+const FormSchema = z.object({
+  email: z
+    .string()
+    .min(2, {
+      message: "Email must be valid.",
+    })
+    .email(),
+});
 
-    const [email, setEmail] = useState('');
-    const [members, setMembers] = useState<Member[]>([]);
+export const SendEmail = ({ initialData }: SendEmailProps) => {
+  const [email, setEmail] = useState("");
+  const params = useParams();
+  const path = usePathname();
+  const { user } = useUser();
 
-    const onAddMember = () => {
-        if (email.trim() !== '') {
-          setMembers([...members, { email: email }]);
-          setEmail(''); // Clear the email input after adding to members
+  const assignedBy = user?.firstName as string;
+
+  const document = useQuery(api.documents.getById, {
+    documentId: params.documentId as Id<"documents">,
+  });
+
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  function onSubmit(data: z.infer<typeof FormSchema>) {
+    const link = "ergo-project.vercel.app" + path;
+
+    const fullData = {
+      assignedBy,
+      link,
+      ...data
+    };
+
+    fetch("/api/emailPublish/route.ts", {
+      method: "POST",
+      body: JSON.stringify(fullData),
+    })
+    .then(response => {
+        if (response.ok) {
+          toast.success("Email Sent!");
+        } else {
+          toast.error("Failed to send email.");
         }
-      };
+      })
+      .catch(error => {
+        console.error("Error sending email:", error);
+        toast.error("An error occurred while sending email.");
+      });
+  }
 
-    return (
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button size="sm" variant="ghost">
-                    Email
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent
-                className="w-72"
-                align="end"
-                alignOffset={8}
-                forceMount
-            >
-                <div className="space-y-4">
-                    <div className="flex items-center gap-x-2">
-                        <Mail className="h-4 w-4"/>
-                        <p className="text-xs font-medium">
-                            Send this email to your members
-                        </p>
-                    </div>
-                    <div className="flex items-center">
-                        <p className="text-xs font-medium">
-                            Members:
-                        </p>
-                    </div>
-                    {members.length > 0 && (
-                        <div className="flex items-start">
-                        <ul className="ml-2">
-                            {members.map((member, index) => (
-                                <li key={index} className="text-xs py-1">
-                                    {member.email}
-                                </li>
-                            ))}
-                        </ul>
-                        </div>
-                    )}
-                    <div className="flex items-center">
-                        <input
-                            value={email}
-                            onChange = {e => setEmail(e.target.value)}
-                            onKeyDown = {(e) => {
-                                if (e.key === "Enter") onAddMember();
-                            }
-                            }
-                            className="flex-1 px-2 text-xs border rounded-1-md h-8 bg-muted"
-                        />
-                        <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={onAddMember}
-                        >
-                            <Plus className="h-4 w-4"/>
-                        </Button>
-                    </div>
-                    <div className="flex flex-col items-center justify-center">
-                        <Button
-                            className="w-full text-xs"
-                            size="sm"
-                        >
-                            Email Document
-                        </Button>
-                    </div>
-                </div>
-            </PopoverContent>
-        </Popover>
-    )
-}
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button size="sm" variant="ghost">
+          Email
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-72" align="end" alignOffset={8} forceMount>
+        <div className="space-y-4">
+          <div className="flex items-center gap-x-2">
+            <Mail className="h-4 w-4" />
+            <p className="text-xs font-medium">
+              Email this document to someone
+            </p>
+          </div>
+
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="email"
+                disabled={document?.isPublished === false}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Recipient:</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Recipient's Email" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      This will email it to the recipient.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex flex-col items-center justify-center">
+                {document?.isPublished ? (
+                  <Button
+                    className="w-full text-xs mt-2"
+                    size="sm"
+                    type="submit"
+                  >
+                    Email Document
+                  </Button>
+                ) : (
+                  <>
+                    <p className="text-xs mb-2">
+                      You must first publish the document so the recipient would
+                      be able to view it!
+                    </p>
+                    <Button className="w-full text-xs" size="sm" disabled>
+                      Email Document
+                    </Button>
+                  </>
+                )}
+              </div>
+            </form>
+          </Form>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
