@@ -34,6 +34,7 @@ export const create = mutation({
             subject: args.subject,
             emailBody: args.emailBody,
             assignedBy: args.assignedBy,
+            done: false,
         });
 
         return task;
@@ -120,6 +121,37 @@ export const update = mutation({
         const task = await ctx.db.patch(args.id, {
             ...rest,
         });
+
+        return task;
+    }
+})
+
+export const setDoneStatus = mutation({
+    args: {
+        id: v.id("tasks"),
+        isDone: v.boolean(),
+    }, handler: async (ctx, args) => {
+        const identity = await ctx.auth.getUserIdentity();
+
+        if (!identity) {
+            throw new Error("Unauthenticated");
+        }
+  
+        const userId = identity.subject;
+
+        const existingTask = await ctx.db.get(args.id);
+
+        if (!existingTask){
+            throw new Error("Task Not Found!");
+        }
+
+        if (existingTask.userId !== userId){
+            throw new Error ("Unauthorized Access");
+        }
+
+        const task = await ctx.db.patch(args.id, {
+            done: args.isDone,
+        })
 
         return task;
     }
