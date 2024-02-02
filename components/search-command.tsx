@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { File } from "lucide-react";
+import { File, Table } from "lucide-react";
 import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/clerk-react";
@@ -72,7 +72,11 @@ export const SearchCommand = () => {
                   {document.icon}
                 </p>
               ) : (
-                <File className="mr-2 h-4 w-4" />
+                (!document.isTable ? (
+                  <File className="mr-2 h-4 w-4" />
+                ) : (
+                  <Table className="mr-2 h-4 w-4" />
+                ))
               )}
               <span>
                 {document.title}
