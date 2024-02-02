@@ -1,28 +1,83 @@
-const mail = require('@sendgrid/mail');
+const mail = require("@sendgrid/mail");
 
 mail.setApiKey(process.env.SENDGRID_API_KEY);
 
 export async function POST(req: Request) {
-    const body = await req.json();
-    
-    const message = `
-        Title: ${body.title}\r\n
-        Due: ${body.dueDate}\r\n
-        Assigned: ${body.assigned}\r\n
-        Link: ${body.link}\r\n
-        Subject: ${body.subject}\r\n
-        EmailBody: ${body.emailBody}
-    `
-    
-    const data = {
-        to: "mallariandrei.main@gmail.com",
-        from: "mallariandrei2@gmail.com",
-        subject: "Subject",
-        text: message,
-        html: message.replace(/\r\n/g, '<br>')
-    }
+  const body = await req.json();
 
-    mail.send(data);
+  const dueDate = new Date(body.dueDate);
+  const reminder = new Date(body.reminder);
 
-    return new Response('OK');
+  const formattedDueDate = dueDate.toLocaleDateString();
+  const formattedReminder = reminder.toLocaleDateString();
+  const formattedReminderUnix = Math.floor(reminder.getTime() / 1000);
+
+  const message = `
+        <h3>Hello ${body.assigned}</h3>
+        <p>A new task has been assigned to you by: ${body.assignedBy}. Here are the details:</p>
+        <hr />
+        <br />
+        
+        <strong>Title:</strong> ${body.title}
+        <br />
+        <strong>Due:</strong> ${formattedDueDate}
+        <br />
+        <p>An email will be sent on as a reminder: ${formattedReminder}</p>
+        
+        <h5>Here are the complementary links:</h5>
+        <strong>Link:</strong> ${body.link}<br>
+
+        <hr />
+        <h6>Beyond this part is either an automatically generated or manually inputted instructions, please read:</h6>
+        <p>${body.emailBody}</p>
+    `;
+
+  const scheduledMessage = `
+        <h3>Hello ${body.assigned}</h3>
+        <p>This is a reminder about the task assigned by: ${body.assignedBy}.</p>
+        <hr />
+        <br />
+    
+        <p>The task was previously sent with a subject ${body.subject}. The details are:</p>
+        <strong>Title:</strong> ${body.title}
+        <br />
+        <strong>Due:</strong> ${formattedDueDate}
+        <br />
+    
+        <h5>Here are the complementary links:</h5>
+        <strong>Link:</strong> ${body.link}<br>
+
+        <hr />
+        <h6>Beyond this part is either an automatically generated email body:</h6>
+        <p>This is a scheduled email, if you've already sent the task, ignore this message</p>
+    `;
+
+  const data = {
+    to: body.assigned,
+    from: "mallariandrei2@gmail.com",
+    subject: body.subject,
+    text: message,
+    html: message,
+  };
+
+  const scheduledData = {
+    to: body.assigned,
+    from: "mallariandrei2@gmail.com",
+    subject: `Reminder about: ${body.subject}`,
+    text: scheduledMessage,
+    html: scheduledMessage,
+    send_at: formattedReminderUnix,
+  };
+
+  console.log(formattedReminderUnix);
+
+  try {
+    await mail.send(data);
+    await mail.send(scheduledData);
+    console.log("Email sent successfully");
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+
+  return new Response("OK");
 }
