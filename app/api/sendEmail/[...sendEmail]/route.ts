@@ -12,6 +12,9 @@ export async function POST(req: Request) {
   const formattedReminder = reminder.toLocaleDateString();
   const formattedReminderUnix = Math.floor(reminder.getTime() / 1000);
 
+  const currentUnixTime = Math.floor(Date.now() / 1000);
+  const addThreeMinutes = currentUnixTime + 3 * 60;
+
   const message = `
         <h3>Hello ${body.assigned}</h3>
         <p>A new task has been assigned to you by: ${body.assignedBy}. Here are the details:</p>
@@ -66,10 +69,10 @@ export async function POST(req: Request) {
     subject: `Reminder about: ${body.subject}`,
     text: scheduledMessage,
     html: scheduledMessage,
-    send_at: formattedReminderUnix,
+    //send_at: formattedReminderUnix,
+    send_at: addThreeMinutes,
   };
-
-  console.log(formattedReminderUnix);
+  
 
   try {
     await mail.send(data);
