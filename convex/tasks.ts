@@ -45,11 +45,11 @@ export const getTaskList = query({
     args:{
         parentDocument: v.optional(v.id("documents")),
     }, handler: async(ctx, args) => {
-        const identity = await ctx.auth.getUserIdentity();
+        //const identity = await ctx.auth.getUserIdentity();
 
-        if (!identity){
-            throw new Error("Not authenticated");
-        }
+        //if (!identity){
+        //    throw new Error("Not authenticated");
+        //}
 
         const taskList = ctx.db.query("tasks")
         .filter((q) => q.eq(q.field("parentDocument"), args.parentDocument))

@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BlockNoteEditor } from "@blocknote/core";
 import { BlockNoteView, useBlockNote } from "@blocknote/react";
 import "@blocknote/react/style.css";
+import TableEditor from "@/components/table-editor";
 
 
 interface DocumentIdPageProps {
@@ -39,6 +40,8 @@ const DocumentIdPage = ({
     });
   };
 
+  const isTable = document?.isTable;
+
   if (document === undefined) {
     return (
       <div>
@@ -62,13 +65,16 @@ const DocumentIdPage = ({
   return ( 
     <div className="pb-40">
       <Cover preview url={document.coverImage} />
-      <div className="md:max-w-3xl lg:max-w-4xl mx-auto">
-        <Toolbar preview initialData={document} />
-        <Editor
-          editable={false}
+      <div className="md:max-w-4xl lg:max-w-5xl mx-auto">
+        <Toolbar initialData={document} />
+        {isTable ? (
+          <TableEditor />
+        ) : (
+          <Editor
           onChange={onChange}
           initialContent={document.content}
-        />
+          />
+        )}
       </div>
     </div>
    );
