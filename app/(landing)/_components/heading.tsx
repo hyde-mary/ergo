@@ -12,9 +12,9 @@ export const Heading = () => {
 
   return (
     <div className="max-w-3xl space-y-4">
-      <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold mb-4 text-[#363636] dark:text-[#cbcbcb]">
-        Where Tasks align and Schedules shine.{" "}
-        <span className="underline">Ergo</span>
+      <h1 className="text-1xl sm:text-2xl md:text-3xl mb-4 text-[#363636] dark:text-[#cbcbcb]">
+        <p>WHERE TASKS ALIGN</p>
+        <p>& SCHEDULE SHINE</p>
       </h1>
       {isLoading && (
         <div className="w-full flex items-center justify-center mt-4">
@@ -46,7 +46,7 @@ export const Heading = () => {
             Already have an account?{" "}
             <SignInButton mode="modal">
               <Button variant={"link"} className="underline p-0">
-                Sign in here
+                Log in here.
               </Button>
             </SignInButton>
           </h6>
