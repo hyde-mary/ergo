@@ -6,14 +6,9 @@ export async function POST(req: Request) {
   const body = await req.json();
 
   const dueDate = new Date(body.dueDate);
-  const reminder = new Date(body.reminder);
 
   const formattedDueDate = dueDate.toLocaleDateString();
-  const formattedReminder = reminder.toLocaleDateString();
-  const formattedReminderUnix = Math.floor(reminder.getTime() / 1000);
-
-  const currentUnixTime = Math.floor(Date.now() / 1000);
-  const addThreeMinutes = currentUnixTime + 3 * 60;
+  const formattedReminder = new Date(body.reminderUnixTime * 1000).toLocaleDateString();
 
   const message = `
         <h3>Hello ${body.assigned}</h3>
@@ -69,8 +64,7 @@ export async function POST(req: Request) {
     subject: `Reminder about: ${body.subject}`,
     text: scheduledMessage,
     html: scheduledMessage,
-    //send_at: formattedReminderUnix,
-    send_at: addThreeMinutes,
+    send_at: body.reminderUnixTime,
   };
   
 
