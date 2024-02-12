@@ -31,8 +31,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { Input } from "@/components/ui/input";
-import TaskCreate from "./task-create";
 import { Button } from "@/components/ui/button";
+import TaskCreate from "./task-create";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -74,7 +74,7 @@ export function DataTable<TData, TValue>({
   return (
     <div>
       <div className="flex items-center py-4">
-        <TaskCreate />
+      <TaskCreate />
         <Input
           placeholder="Filter tasks..."
           value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
