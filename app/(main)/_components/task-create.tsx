@@ -32,7 +32,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { add, format } from "date-fns";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -40,13 +40,19 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 
 import { useUser } from "@clerk/clerk-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const FormSchema = z.object({
   title: z.string().min(2).max(50),
   dueDate: z.date(),
   assigned: z.string().min(2).email("This is not a valid email"),
   link: z.string(),
-  reminder: z.date(),
+  reminder: z.string(),
   subject: z.string(),
   emailBody: z.string(),
   assignedBy: z.string(),
@@ -56,12 +62,18 @@ const TaskCreate = () => {
   const createTask = useMutation(api.tasks.create);
   const params = useParams<{ documentId?: Id<"documents"> }>();
   const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [selectedReminder, setSelectedReminder] = useState("On Time");
   const { user } = useUser();
 
   const assignedBy = user?.firstName as string;
 
   const handleButtonClick = () => {
     setIsUpdateDialogOpen(true);
+  };
+
+  const handleReminderClick = (reminder: string) => {
+    setSelectedReminder(reminder);
+    form.setValue("reminder", reminder);
   };
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -71,7 +83,7 @@ const TaskCreate = () => {
       dueDate: new Date(),
       assigned: "",
       link: "",
-      reminder: new Date(),
+      reminder: "On Time",
       subject: "This is an Automatically Generated Subject",
       emailBody: "This is an Automatically Generated Email Body",
       assignedBy: assignedBy,
@@ -82,13 +94,36 @@ const TaskCreate = () => {
     const { title, dueDate, assigned, link, reminder, subject, emailBody } =
       data;
 
+    let reminderDate;
+      switch (reminder) {
+        case "On Time":
+          reminderDate = dueDate; // no reminder, same as due date
+          break;
+        case "5 minutes early":
+          reminderDate = add(dueDate, { minutes: -5 });
+          break;
+        case "30 minutes early":
+          reminderDate = add(dueDate, { minutes: -30 });
+          break;
+        case "1 hour early":
+          reminderDate = add(dueDate, { hours: -1 });
+          break;
+        case "1 day early":
+          reminderDate = add(dueDate, { days: -1 });
+          break;
+        default:
+          reminderDate = dueDate;
+      }
+
+      const reminderUnixTime = reminderDate.getTime() / 1000;
+
     const promise = createTask({
       parentDocument: params.documentId,
       title: title,
       dueDate: dueDate.toJSON(),
       assigned: assigned,
       link: link,
-      reminder: reminder.toJSON(),
+      reminder: reminder,
       subject: subject,
       emailBody: emailBody,
       assignedBy: assignedBy,
@@ -97,9 +132,10 @@ const TaskCreate = () => {
     const fullData = {
       ...data,
       assignedBy: assignedBy,
+      reminderUnixTime: reminderUnixTime,
     };
 
-    form.reset();
+    console.log(fullData);
 
     toast.promise(promise, {
       loading: "Creating Tasks",
@@ -110,14 +146,16 @@ const TaskCreate = () => {
     fetch("/api/sendEmail/route.ts", {
       method: "POST",
       body: JSON.stringify(fullData),
-    }).then(response => {
+    })
+      .then((response) => {
         if (response.ok) {
           toast.success("Email Sent!");
+          form.reset();
         } else {
           toast.error("Failed to send email.");
         }
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error sending email:", error);
         toast.error("An error occurred while sending email.");
       });
@@ -220,39 +258,37 @@ const TaskCreate = () => {
                             <FormLabel className="text-left">
                               <span>Reminder</span>
                             </FormLabel>
-                            <Popover>
-                              <PopoverTrigger asChild>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
                                 <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-[240px] pl-3 text-left font-normal ml-4",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value ? (
-                                      format(field.value, "PPP")
-                                    ) : (
-                                      <span>Pick a date</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
+                                    <Button
+                                      variant={"outline"}
+                                      className="w-[240px] pl-3 text-left font-normal ml-4"
+                                    >
+                                      {selectedReminder
+                                        ? selectedReminder
+                                        : "On Time"}
+                                    </Button>
                                 </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) => date < new Date()}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent className="w-56">
+                              <DropdownMenuItem onClick={() => handleReminderClick("On Time")}>
+                                On Time
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleReminderClick("5 minutes early")}>
+                                5 minutes early
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleReminderClick("30 minutes early")}>
+                                30 minutes early
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleReminderClick("1 hour early")}>
+                                1 hour early
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleReminderClick("1 day early")}>
+                                1 day early
+                              </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </FormItem>
                         );
                       }}
@@ -354,7 +390,12 @@ const TaskCreate = () => {
                 </div>
                 <div>
                   <DialogFooter className="sm:justify-end mt-8">
-                    <DialogClose asChild onClick={() => {form.reset()}}>
+                    <DialogClose
+                      asChild
+                      onClick={() => {
+                        form.reset();
+                      }}
+                    >
                       <Button variant="secondary">Cancel</Button>
                     </DialogClose>
                     <Button variant="outline">Save as Draft</Button>
