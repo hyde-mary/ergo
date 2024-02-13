@@ -160,7 +160,7 @@ export const Navigation = () => {
           <Item 
           label="Calendar"
           icon={Calendar}
-          onClick={()=>{}}
+          onClick={() => router.push(`/calendar/`)}
           />
           <Item 
           onClick={handleCreate} 
